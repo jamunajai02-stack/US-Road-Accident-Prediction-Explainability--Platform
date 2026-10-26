@@ -1,0 +1,100 @@
+version: '3.8'
+
+services:
+  # 1. Spatio-Temporal Database (PostGIS)
+  postgis:
+    image: postgis/postgis:16-3.4
+    container_name: accident_postgis
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: accident_platform
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgis_data:/var/lib/postgresql/data
+      - ./infra/postgis/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d accident_platform"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # 2. Low-Latency Feature Cache (Redis) - Patch 6
+  redis:
+    image: redis:7-alpine
+    container_name: accident_redis
+    ports:
+      - "6379:6379"
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # 3. Real-Time Event Streaming (Redpanda / Kafka)
+  redpanda:
+    image: docker.redpanda.com/redpandadata/redpanda:v23.3.4
+    container_name: accident_redpanda
+    command:
+      - redpanda start
+      - --smp 1
+      - --memory 512M
+      - --overprovisioned
+      - --kafka-addr internal://0.0.0.0:9092,external://0.0.0.0:19092
+      - --advertise-kafka-addr internal://redpanda:9092,external://localhost:19092
+    ports:
+      - "19092:19092"
+      - "9644:9644" # Admin API
+
+  # 4. Turn-by-Turn Routing Engine (Valhalla)
+  valhalla:
+    image: ghcr.io/gis-ops/docker-valhalla/valhalla:latest
+    container_name: accident_valhalla
+    ports:
+      - "8002:8002"
+    environment:
+      - build_elevation=False
+      - build_admins=True
+      - build_time_zones=True
+    volumes:
+      - ./data/valhalla_tiles:/custom_files
+
+  # 5. FastAPI REST API Gateway
+  api-gateway:
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile.api
+    container_name: accident_api_gateway
+    ports:
+      - "8000:8000"
+    environment:
+      - APP_ENV=production
+      - REDIS_URL=redis://redis:6379/0
+      - POSTGIS_URL=postgresql+asyncpg://postgres:postgres@postgis:5432/accident_platform
+      - VALHALLA_URL=http://valhalla:8002
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgis:
+        condition: service_healthy
+
+  # 6. Background Streaming Ingestion Worker
+  worker:
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile.worker
+    container_name: accident_worker
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - KAFKA_BOOTSTRAP_SERVERS=redpanda:9092
+    depends_on:
+      - redis
+      - redpanda
+
+volumes:
+  postgis_data:
+  redis_data:

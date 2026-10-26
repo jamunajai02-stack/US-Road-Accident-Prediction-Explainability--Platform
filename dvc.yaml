@@ -1,0 +1,38 @@
+# DVC Pipeline Versioning (Patch 9)
+# Tracks dependencies, code hashes, and artifact integrity across all 5 build stages.
+
+stages:
+  phase0_5_graph_extract:
+    cmd: python scripts/run_phase0_5_graph_build.py
+    deps:
+      - configs/h3_grid.yaml
+      - modules/phase0_5_graph_extraction/
+    outs:
+      - data/processed/road_graph_v1.gpkg
+
+  phase1_enrichment:
+    cmd: python scripts/run_phase1_enrichment.py
+    deps:
+      - configs/thresholds.yaml
+      - modules/phase1_data_infra/
+      - data/processed/road_graph_v1.gpkg
+    outs:
+      - data/processed/enriched_samples.parquet
+
+  phase2_feature_embedding:
+    cmd: python scripts/run_phase2_feature_embed.py
+    deps:
+      - modules/phase2_graph_construction/
+      - data/processed/road_graph_v1.gpkg
+      - data/processed/enriched_samples.parquet
+    outs:
+      - data/processed/aligned_snapshots.pt
+
+  phase3_training:
+    cmd: python scripts/run_phase3_train.py --epochs 20
+    deps:
+      - configs/model.yaml
+      - modules/phase3_predictive_core/
+      - data/processed/aligned_snapshots.pt
+    outs:
+      - data/processed/stgcn_model.onnx
