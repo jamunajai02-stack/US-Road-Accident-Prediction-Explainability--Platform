@@ -1,0 +1,43 @@
+app:
+  name: "accident-prediction-platform"
+  version: "0.1.0"
+  env: "development"
+  debug: true
+
+providers:
+  weather:
+    primary: "noaa"
+    fallback: "open_meteo"
+    noaa_base_url: "https://api.weather.gov"
+    open_meteo_base_url: "https://archive-api.open-meteo.com/v1/archive"
+    rate_limit_rps: 10
+    timeout_seconds: 10
+    max_retries: 3
+  traffic:
+    primary: "state511"
+    sources:
+      - state: "CA"
+        url: "https://quickmap.dot.ca.gov/data/lcs.geojson"
+      - state: "NY"
+        url: "https://511ny.org/api/getevents"
+  routing:
+    engine: "valhalla"
+    base_url: "http://localhost:8002"
+    timeout_seconds: 5
+  cache:
+    backend: "in_memory" # "redis" or "in_memory"
+    redis_url: "redis://localhost:6379/0"
+    ttl_seconds: 3600
+
+storage:
+  raw_data_dir: "data/raw"
+  interim_data_dir: "data/interim"
+  processed_data_dir: "data/processed"
+  checkpoints_dir: "data/interim/checkpoints"
+  road_graph_path: "data/processed/road_graph_v1.gpkg"
+  stgcn_onnx_path: "data/processed/stgcn_model.onnx"
+
+database:
+  postgis_url: "postgresql+asyncpg://postgres:postgres@localhost:5432/accident_platform"
+  pool_size: 10
+  max_overflow: 20

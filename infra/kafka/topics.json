@@ -1,0 +1,32 @@
+{
+  "topics": [
+    {
+      "name": "weather.nws.observations",
+      "partitions": 3,
+      "replication_factor": 1,
+      "retention_ms": 86400000,
+      "description": "Normalized atmospheric observation stream from NOAA NWS radar & stations"
+    },
+    {
+      "name": "traffic.wzdx.incidents",
+      "partitions": 3,
+      "replication_factor": 1,
+      "retention_ms": 86400000,
+      "description": "Active road incidents, workzones, and lane closures from US DOT WZDx and State 511 feeds"
+    },
+    {
+      "name": "predictions.edge.probabilities",
+      "partitions": 6,
+      "replication_factor": 1,
+      "retention_ms": 604800000,
+      "description": "Calculated 1-hour segment accident probabilities outputted by STGCN predictive core"
+    },
+    {
+      "name": "alerts.routing.dispatched",
+      "partitions": 3,
+      "replication_factor": 1,
+      "retention_ms": 2592000000,
+      "description": "Vehicle and traffic operations hazard alert payloads with safe detour geometry"
+    }
+  ]
+}

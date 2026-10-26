@@ -1,0 +1,46 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --color-risk-low: #10B981;
+    --color-risk-moderate: #F59E0B;
+    --color-risk-high: #F97316;
+    --color-risk-severe: #EF4444;
+  }
+}
+
+/* MapLibre custom popups & overlays */
+.maplibregl-popup-content {
+  background-color: rgb(15 23 42 / 0.95) !important;
+  color: #f8fafc !important;
+  border-radius: 0.75rem !important;
+  box-shadow: 0 10px 25px -5px rgb(0 0 0 / 0.3) !important;
+  padding: 0.75rem 1rem !important;
+  border: 1px solid rgb(51 65 85 / 0.5) !important;
+  backdrop-filter: blur(8px) !important;
+}
+
+.maplibregl-popup-anchor-top .maplibregl-popup-tip {
+  border-bottom-color: rgb(15 23 42 / 0.95) !important;
+}
+.maplibregl-popup-anchor-bottom .maplibregl-popup-tip {
+  border-top-color: rgb(15 23 42 / 0.95) !important;
+}
+
+/* Custom smooth scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #94a3b8;
+  border-radius: 4px;
+}
+.dark ::-webkit-scrollbar-thumb {
+  background: #475569;
+}

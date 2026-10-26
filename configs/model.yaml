@@ -1,0 +1,47 @@
+model:
+  name: "stgcn_accident_predictor"
+  version: "1.0.0"
+  
+  spatial_architecture:
+    type: "STGCN"
+    in_channels: 18         # 10 static edge features + 8 dynamic weather/traffic features
+    hidden_channels: 64
+    out_channels: 32
+    num_cheb_filter: 3
+    dropout: 0.2
+
+  temporal_backend: "transformer" # Options: "transformer" | "convlstm"
+  
+  transformer:
+    d_model: 32
+    nhead: 4
+    num_encoder_layers: 2
+    dim_feedforward: 128
+    dropout: 0.1
+    sequence_length: 6     # Rolling 6-hour context window (t-5 to t)
+
+  convlstm:
+    hidden_dim: 32
+    kernel_size: 3
+    num_layers: 2
+    sequence_length: 6
+
+  probability_head:
+    hidden_dim: 16
+    output_dim: 1
+    calibration_method: "elkan_log_odds" # Options: "elkan_log_odds" | "platt_scaling" | "isotonic"
+    temperature: 1.0
+
+training:
+  batch_size: 32
+  learning_rate: 0.001
+  weight_decay: 1.0e-4
+  epochs: 50
+  early_stopping_patience: 7
+  pos_weight: 3.5          # Balanced loss weight for positive accident class
+
+split:
+  train_end: "2021-12-31T23:59:59"
+  val_end: "2022-12-31T23:59:59"
+  test_end: "2023-12-31T23:59:59"
+  spatial_holdout_ratio: 0.15 # 15% H3 cells held out for spatial generalization check

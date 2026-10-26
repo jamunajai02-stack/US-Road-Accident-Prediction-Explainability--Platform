@@ -1,0 +1,5 @@
+h3:
+  resolution: 8           # Base resolution ~460m edge length
+  subgraph_resolution: 7  # Regional clustering resolution ~1.2km edge length
+  max_search_k_ring: 2    # K-ring distance for spatial neighbor graph expansion
+  snap_tolerance_meters: 50.0 # Snapping tolerance when joining H3 to road edge

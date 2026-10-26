@@ -1,0 +1,22 @@
+thresholds:
+  hotspot:
+    probability_cutoff: 0.80      # Edges with risk >= 80% are flagged as high hazard
+    cluster_min_size: 2           # Minimum connected edges to form a hotspot cluster
+    spatial_radius_meters: 1000.0 # Clustering distance threshold
+
+  negative_sampling:
+    ratio: 3.5                    # 3 to 4 synthetic non-accidents per positive accident
+    time_offset_days: [1, 2, 7, 14]
+    time_offset_hours: [-3, -2, 2, 3]
+
+  explainability:
+    max_tree_depth: 4
+    min_samples_split: 5
+    top_n_rules: 3
+    feature_importance_cutoff: 0.10
+
+  risk_bands:
+    low: [0.0, 0.30]
+    moderate: [0.30, 0.60]
+    high: [0.60, 0.80]
+    severe: [0.80, 1.00]
